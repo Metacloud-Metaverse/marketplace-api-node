@@ -1,12 +1,13 @@
 {
   "name": "metacloud-marketplace-api-node",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Metaverse Game",
-  "main": "index.js",
+  "main": "./src/index.ts",
   "scripts": {
+    "start": "export NODE_ENV=production && node ./src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node src/index.ts",
-    "prod": "export NODE_ENV=production && node src/index.ts"
+    "dev": "node ./src/index.ts",
+    "prod": "export NODE_ENV=production && node ./src/index.ts"
   },
   "author": "",
   "license": "ISC",
