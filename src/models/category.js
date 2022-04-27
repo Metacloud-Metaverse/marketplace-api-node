@@ -1,0 +1,39 @@
+'use strict';
+const {
+  Model
+} = require('sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class Category extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate(models) {
+      // define association here
+    }
+  }
+  Category.init({
+    title: DataTypes.STRING,
+    type: DataTypes.INTEGER,
+    caption: DataTypes.STRING,
+    photo: DataTypes.STRING,
+    parent_id: {
+      type: DataTypes.INTEGER,
+      defaultValue: null
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: sequelize.fn('now')
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: sequelize.fn('now')
+    },
+  }, {
+    sequelize,
+    modelName: 'Category',
+    timestamps: false
+  });
+  return Category;
+};
