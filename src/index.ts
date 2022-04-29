@@ -6,7 +6,7 @@ const port = Number(process.env.PORT || 3001)
 const app = express()
 
 app.use(express.json())
-app.use('/api', ApiRoutes)
+app.use('/', ApiRoutes)
 
     app.listen(port, () =>
     console.log(`Listening on ws://localhost:${port}`)
