@@ -9,5 +9,6 @@ router.post('/category/save', categoryController.saveCategory)
 router.get('/categories/list-with-tree', categoryController.getCategories)
 router.post('/collection/save', auth, collectionController.saveCollection)
 router.post('/product/save', auth, productController.saveProduct)
+router.get('/product/fetch/:id', productController.getProductById)
 
 module.exports = router;

@@ -1,7 +1,5 @@
 const dbs = require('../models/index.js');
 const productModel = dbs.Product;
-const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
 const apiResponseHandler = require('../helper/ApiResponse.ts');
 let isValidate = null;
 class ProductController {
@@ -9,12 +7,10 @@ class ProductController {
     try {
       const data = req.body
       data.creator_user_id = req.user.user_id
-      data.status = 0
-      console.log(data)
-      if (!data.title || !data.gender || !data.rarity ) {
+      if (!data.title || !data.gender || !data.rarity) {
         const message = "Required field is/are empty or null";
         apiResponseHandler.sendError(req, res, "data", null, message)
-     }else if (data.type && data.type > 1) {
+      } else if (data.type && data.type > 1) {
         const message = "type value is not valid, Value should be either 0 or 1"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else if (data.gender && (data.gender > 2)) {
@@ -35,7 +31,7 @@ class ProductController {
       } else if (data.title == null || data.title == "") {
         const message = "Title can not be Empty or Null"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (data.price && !(isValidate = await ProductController.validatePrice(data.price))){
+      } else if (data.price && !(isValidate = await ProductController.validatePrice(data.price))) {
         const message = "price value is not valid, Value should numbers only"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else {
@@ -47,8 +43,28 @@ class ProductController {
       apiResponseHandler.sendError(req, res, "data", null, message)
     }
   }
+  static async getProductById(req, res, next) {
+    try {
+      const product_id = req.params.id
+      let isProductExist = await ProductController.productExist(product_id)
+      if (!isProductExist) {
+        const message = "Product not available with given id";
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else {
+        const data = isProductExist
+        apiResponseHandler.send(req, res, "data", data, "Product fetched successfully")
+      }
+    } catch (error) {
+      const message = "Error fetching product, Please try again with correct data"
+      apiResponseHandler.sendError(req, res, "data", null, message)
+    }
+
+  }
+  static async productExist(id) {
+    console.log(id)
+    return productModel.findOne({ where: { id: id } })
+  }
   static async validatePrice(data) {
-    console.log(data)
     return await data.match(/^\d+(?:[.]\d+)*$/);
   }
 }
