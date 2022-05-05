@@ -1,5 +1,7 @@
 const dbs = require('../models/index.js');
 const productModel = dbs.Product;
+const Sequelize = require('sequelize')
+const Op = Sequelize.Op;
 const apiResponseHandler = require('../helper/ApiResponse.ts');
 let isValidate = null;
 class ProductController {
@@ -65,6 +67,21 @@ class ProductController {
       apiResponseHandler.sendError(req, res, "data", null, message)
     }
 
+  }
+  static async searchProduct(req, res, next){
+    try {
+      const data = req.query
+      console.log(data) 
+      const result = await productModel.findAll({
+        where: {
+          title: { [Op.like]: '%' + req.query.title + '%' },
+        }
+      });
+      apiResponseHandler.send(req, res, "data", result, "Product fetched successfully")
+    } catch (error) {
+      const message = "Error fetching product, Please try again with correct data"
+      apiResponseHandler.sendError(req, res, "data", null, message)
+    }
   }
   static async productExist(id) {
     console.log(id)
