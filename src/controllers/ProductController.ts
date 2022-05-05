@@ -7,8 +7,14 @@ class ProductController {
     try {
       const data = req.body
       data.creator_user_id = req.user.user_id
-      if (!data.title || !data.gender || !data.rarity) {
-        const message = "Required field is/are empty or null";
+      if (!data.title) {
+        const message = "Title field required is either empty or null";
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (!data.gender) {
+        const message = "Gender field required is either empty or null";
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (!data.rarity) {
+        const message = "Rarity field required is either empty or null";
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else if (data.type && data.type > 1) {
         const message = "type value is not valid, Value should be either 0 or 1"
