@@ -72,43 +72,19 @@ class ProductController {
   static async searchProduct(req, res, next) {
     try {
       const data = req.query
-      console.log(data, 1)
-      // const whereTitle = data.title ? { title: { [Op.like]: '%' + data.title + '%' } } : ''
-      // const whereCondition = data.onlyOnSale ? { is_on_sale: data.onlyOnSale } : ''
-      const whereCondition = {
-        title: { [Op.like]: '%' + data.title + '%' },
-        is_on_sale: data.onlyOnSale,
-        collection_id: data.collectionId,
-        gender: data.gender,
-        rarity: data.rarities,
-        category_id: data.categoryId
-      }
-      console.log(typeof whereCondition)
-      let whereConditions = "";
-      // if (data.title) {
-      //   whereConditions += "title: {[" + Op.like + "]:  '%'"+ data.title +"'%'},"
-      // }
-      if (data.onlyOnSale) {
-        whereConditions += "{is_on_sale:" + data.onlyOnSale + ","
-      }
-      if (data.collectionId) {
-        whereConditions += "collection_id:" + data.collectionId + ","
-      }
-      if (data.gender) {
-        whereConditions += "gender:" + data.gender + ","
-      }
-      if (data.rarities) {
-        whereConditions += "rarity:" + data.rarities + ","
-      }
-      if (data.categoryId) {
-        whereConditions += "category_id:" + data.categoryId + ","
-      }
-      whereConditions += "}"
-      console.log(whereConditions, 2)
-      console.log(whereCondition, 3)
+      console.log(data)
+      const whereCondition = {};
+      if (data.title) { whereCondition['title'] = { [Op.like]: '%' + data.title + '%' } }
+      if (data.onlyOnSale) { whereCondition['is_on_sale'] = data.onlyOnSale }
+      if (data.collectionId) { whereCondition['collection_id'] = data.collectionId }
+      if (data.gender) { whereCondition['gender'] = data.gender }
+      if (data.rarities) { whereCondition['rarity'] = data.rarities }
+      if (data.categoryId) { whereCondition['category_id'] = data.categoryId }
+      console.log(whereCondition)
       const result = await productModel.findAll({
         where: whereCondition
-      });
+      },
+      );
       apiResponseHandler.send(req, res, "data", result, "Product fetched successfully")
     } catch (error) {
       const message = "Error fetching product, Please try again with correct data"
