@@ -1,6 +1,7 @@
 const dbs = require('../models/index.js');
 const productModel = dbs.Product;
 const Sequelize = require('sequelize')
+const { QueryTypes } = require('sequelize')
 const Op = Sequelize.Op;
 const apiResponseHandler = require('../helper/ApiResponse.ts');
 let isValidate = null;
@@ -68,14 +69,45 @@ class ProductController {
     }
 
   }
-  static async searchProduct(req, res, next){
+  static async searchProduct(req, res, next) {
     try {
       const data = req.query
-      console.log(data) 
+      console.log(data, 1)
+      // const whereTitle = data.title ? { title: { [Op.like]: '%' + data.title + '%' } } : ''
+      // const whereCondition = data.onlyOnSale ? { is_on_sale: data.onlyOnSale } : ''
+      const whereCondition = {
+        title: { [Op.like]: '%' + data.title + '%' },
+        is_on_sale: data.onlyOnSale,
+        collection_id: data.collectionId,
+        gender: data.gender,
+        rarity: data.rarities,
+        category_id: data.categoryId
+      }
+      console.log(typeof whereCondition)
+      let whereConditions = "";
+      // if (data.title) {
+      //   whereConditions += "title: {[" + Op.like + "]:  '%'"+ data.title +"'%'},"
+      // }
+      if (data.onlyOnSale) {
+        whereConditions += "{is_on_sale:" + data.onlyOnSale + ","
+      }
+      if (data.collectionId) {
+        whereConditions += "collection_id:" + data.collectionId + ","
+      }
+      if (data.gender) {
+        whereConditions += "gender:" + data.gender + ","
+      }
+      if (data.rarities) {
+        whereConditions += "rarity:" + data.rarities + ","
+      }
+      if (data.categoryId) {
+        whereConditions += "category_id:" + data.categoryId + ","
+      }
+      whereConditions += "}"
+      console.log(whereConditions, 2)
+      console.log(whereCondition, 3)
       const result = await productModel.findAll({
-        where: {
-          title: { [Op.like]: '%' + req.query.title + '%' },
-        }
+        where: whereCondition
       });
       apiResponseHandler.send(req, res, "data", result, "Product fetched successfully")
     } catch (error) {
