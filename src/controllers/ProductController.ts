@@ -1,23 +1,24 @@
-const dbs = require('../models/index.js');
-const productModel = dbs.Product;
+const dbs = require('../models/index.js')
+const productModel = dbs.Product
 const Sequelize = require('sequelize')
 const { QueryTypes } = require('sequelize')
-const Op = Sequelize.Op;
-const apiResponseHandler = require('../helper/ApiResponse.ts');
-let isValidate = null;
+const Op = Sequelize.Op
+const apiResponseHandler = require('../helper/ApiResponse.ts')
+let isValidate = null
+
 class ProductController {
   static async saveProduct(req, res, next) {
     try {
       const data = req.body
       data.creator_user_id = req.user.user_id
       if (!data.title) {
-        const message = "Title field required is either empty or null";
+        const message = "Title field required is either empty or null"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else if (!data.gender) {
-        const message = "Gender field required is either empty or null";
+        const message = "Gender field required is either empty or null"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else if (!data.rarity) {
-        const message = "Rarity field required is either empty or null";
+        const message = "Rarity field required is either empty or null"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else if (data.type && data.type > 1) {
         const message = "type value is not valid, Value should be either 0 or 1"
@@ -44,7 +45,7 @@ class ProductController {
         const message = "price value is not valid, Value should numbers only"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else {
-        await productModel.create(data, "Product saved successfully");
+        await productModel.create(data, "Product saved successfully")
         apiResponseHandler.send(req, res, "data", data, "Product saved successfully")
       }
     } catch (error) {
@@ -57,7 +58,7 @@ class ProductController {
       const product_id = req.params.id
       let isProductExist = await ProductController.productExist(product_id)
       if (!isProductExist) {
-        const message = "Product not available with given id";
+        const message = "Product not available with given id"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else {
         const data = isProductExist
@@ -72,39 +73,85 @@ class ProductController {
   static async searchProduct(req, res, next) {
     try {
       const data = req.query
-      const whereCondition = {};
-      let sortByCondition = ["id"];
-      if (data.title) { whereCondition['title'] = { [Op.like]: '%' + data.title + '%' } }
-      if (data.onlyOnSale) { whereCondition['is_on_sale'] = data.onlyOnSale }
-      if (data.collectionId) { whereCondition['collection_id'] = data.collectionId }
-      if (data.gender) { whereCondition['gender'] = data.gender }
-      if (data.categoryId) { whereCondition['category_id'] = data.categoryId }
-      if (data.rarities) { 
-        let rarityArray = data.rarities.split(',');
-        let a = rarityArray.length;
+      const whereCondition = {}
+      let sortByCondition = ["id"]
+      if (data.title) {
+        if (isNaN(data.title)) {
+          whereCondition['title'] = { [Op.like]: '%' + data.title + '%' }
+        }
+      }
+      if (data.onlyOnSale) {
+        if (!isNaN(data.onlyOnSale) && (data.onlyOnSale < 2)) {
+          whereCondition['is_on_sale'] = data.onlyOnSale
+        } else {
+          const para = 'onlyOnSale'
+          ProductController.validateError(req, res, para)
+          return
+        }
+      }
+      if (data.collectionId) {
+        if (!isNaN(data.collectionId)) {
+          whereCondition['collection_id'] = data.collectionId
+        } else {
+          const para = 'collection_id'
+          ProductController.validateError(req, res, para)
+          return
+        }
+      }
+      if (data.gender) {
+        if (!isNaN(data.gender) && (data.gender < 3)) {
+          whereCondition['gender'] = data.gender
+        } else {
+          const para = 'gender'
+          ProductController.validateError(req, res, para)
+          return
+        }
+      }
+      if (data.categoryId) {
+        if (!isNaN(data.categoryId)) {
+          whereCondition['category_id'] = data.categoryId
+        } else {
+          const para = 'categoryId'
+          ProductController.validateError(req, res, para)
+          return
+        }
+      }
+      if (data.rarities) {
+        let rarityArray = data.rarities.split(',')
+        let a = rarityArray.length
         const array = []
         for (let i = 0; i < a; i++) {
-          console.log(rarityArray[i])
-          array.push(rarityArray[i])
+          if (!isNaN(rarityArray[i]) && (rarityArray[i] < 7)) {
+            array.push(rarityArray[i])
+          } else {
+            const para = 'rarities'
+            ProductController.validateError(req, res, para)
+            return
+          }
         }
-        whereCondition['rarity'] = { [Op.in]: array } 
+        whereCondition['rarity'] = { [Op.in]: array }
       }
       if (data.sortBy) {
-        if (data.sortBy == 0) { sortByCondition = ["title"] }
-        if (data.sortBy == 1) { sortByCondition = ["created_at", "DESC"] }
-        if (data.sortBy == 2) { sortByCondition = ["price", "ASC"] }
+        if (!isNaN(data.sortBy) && (data.sortBy < 3)) {
+          if (data.sortBy == 0) { sortByCondition = ["title"] }
+          if (data.sortBy == 1) { sortByCondition = ["created_at", "DESC"] }
+          if (data.sortBy == 2) { sortByCondition = ["price", "ASC"] }
+        } else {
+          const para = 'sortBy'
+          ProductController.validateError(req, res, para)
+          return
+        }
       }
-      console.log(whereCondition)
       const result = await productModel.findAll({
         where: whereCondition,
         order: [[sortByCondition]]
       },
-      );
+      )
       if (!result || result.length == 0) {
-        const message = "No product matches with given data";
+        const message = "No product matches with given data"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else {
-      apiResponseHandler.send(req, res, "data", result, "Product fetched successfully")
+        apiResponseHandler.send(req, res, "data", result, "Product fetched successfully")
       }
     } catch (error) {
       const message = "Error fetching product, Please try again with correct data"
@@ -116,8 +163,13 @@ class ProductController {
     return productModel.findOne({ where: { id: id } })
   }
   static async validatePrice(data) {
-    return await data.match(/^\d+(?:[.]\d+)*$/);
+    return await data.match(/^\d+(?:[.]\d+)*$/)
+  }
+  static async validateError(req, res, para) {
+    const message = `Data of ${para} is not valid, please use valid data`
+    apiResponseHandler.sendError(req, res, "data", null, message)
+    return
   }
 }
 
-module.exports = ProductController;
+module.exports = ProductController
