@@ -72,17 +72,22 @@ class ProductController {
   static async searchProduct(req, res, next) {
     try {
       const data = req.query
-      console.log(data)
       const whereCondition = {};
+      let sortByCondition = ["id"];
       if (data.title) { whereCondition['title'] = { [Op.like]: '%' + data.title + '%' } }
       if (data.onlyOnSale) { whereCondition['is_on_sale'] = data.onlyOnSale }
       if (data.collectionId) { whereCondition['collection_id'] = data.collectionId }
       if (data.gender) { whereCondition['gender'] = data.gender }
       if (data.rarities) { whereCondition['rarity'] = data.rarities }
       if (data.categoryId) { whereCondition['category_id'] = data.categoryId }
-      console.log(whereCondition)
+      if (data.sortBy) {
+        if (data.sortBy == 0) { sortByCondition = ["title"] }
+        if (data.sortBy == 1) { sortByCondition = ["created_at", "DESC"] }
+        if (data.sortBy == 2) { sortByCondition = ["price", "ASC"] }
+      }
       const result = await productModel.findAll({
-        where: whereCondition
+        where: whereCondition,
+        order: [[sortByCondition]]
       },
       );
       apiResponseHandler.send(req, res, "data", result, "Product fetched successfully")
