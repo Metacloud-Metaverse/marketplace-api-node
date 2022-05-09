@@ -78,19 +78,34 @@ class ProductController {
       if (data.onlyOnSale) { whereCondition['is_on_sale'] = data.onlyOnSale }
       if (data.collectionId) { whereCondition['collection_id'] = data.collectionId }
       if (data.gender) { whereCondition['gender'] = data.gender }
-      if (data.rarities) { whereCondition['rarity'] = data.rarities }
       if (data.categoryId) { whereCondition['category_id'] = data.categoryId }
+      if (data.rarities) { 
+        let rarityArray = data.rarities.split(',');
+        let a = rarityArray.length;
+        const array = []
+        for (let i = 0; i < a; i++) {
+          console.log(rarityArray[i])
+          array.push(rarityArray[i])
+        }
+        whereCondition['rarity'] = { [Op.in]: array } 
+      }
       if (data.sortBy) {
         if (data.sortBy == 0) { sortByCondition = ["title"] }
         if (data.sortBy == 1) { sortByCondition = ["created_at", "DESC"] }
         if (data.sortBy == 2) { sortByCondition = ["price", "ASC"] }
       }
+      console.log(whereCondition)
       const result = await productModel.findAll({
         where: whereCondition,
         order: [[sortByCondition]]
       },
       );
+      if (!result || result.length == 0) {
+        const message = "No product matches with given data";
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else {
       apiResponseHandler.send(req, res, "data", result, "Product fetched successfully")
+      }
     } catch (error) {
       const message = "Error fetching product, Please try again with correct data"
       apiResponseHandler.sendError(req, res, "data", null, message)
