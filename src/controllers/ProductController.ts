@@ -4,7 +4,17 @@ const Sequelize = require('sequelize')
 const { QueryTypes } = require('sequelize')
 const Op = Sequelize.Op
 const apiResponseHandler = require('../helper/ApiResponse.ts')
+
 let isValidate = null
+const stockAvailable = {
+  0: 1,
+  1: 10,
+  2: 100,
+  3: 1000,
+  4: 5000,
+  5: 10000,
+  6: 100000,
+}
 
 class ProductController {
   static async saveProduct(req, res, next) {
@@ -14,37 +24,42 @@ class ProductController {
       if (!data.title) {
         const message = "Title field required is either empty or null"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (!data.gender) {
+      } else if (!data.gender && data.gender != 0) {
         const message = "Gender field required is either empty or null"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (!data.rarity) {
+      } else if (!data.rarity && data.rarity!= 0) {
         const message = "Rarity field required is either empty or null"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (data.type && data.type > 1) {
+      } else if (!data.price) {
+        const message = "Price field required is either empty or null"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (data.type && (data.type > 1 || isNaN(data.type))) {
         const message = "type value is not valid, Value should be either 0 or 1"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (data.gender && (data.gender > 2)) {
+      } else if (data.gender && (data.gender > 2 || isNaN(data.gender))) {
         const message = "gender value is not valid, Value should be either 0, 1 or 2"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (data.rarity && data.rarity > 6) {
+      } else if (data.rarity && (data.rarity > 6 || isNaN(data.rarity))) {
         const message = "rarity value is not valid, Value should be between 0 and 6"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (data.is_bid && data.is_bid > 1) {
+      } else if (data.is_bid && (data.is_bid > 1 || isNaN(data.is_bid))) {
         const message = "is_bid value is not valid, Value should be either 0 or 1"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (data.is_on_sale && data.is_on_sale > 1) {
+      } else if (data.is_on_sale && (data.is_on_sale > 1 || isNaN(data.is_on_sale))) {
         const message = "is_on_sale value is not valid, Value should be either 0 or 1"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (data.is_state_use && data.is_state_use > 1) {
+      } else if (data.is_state_use && (data.is_state_use > 1 || isNaN(data.is_state_use))) {
         const message = "is_state_use value is not valid, Value should be either 0 or 1"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (data.title == null || data.title == "") {
-        const message = "Title can not be Empty or Null"
+      } else if (data.title && !isNaN(data.title)) {
+        const message = "Title value is not valid, Value should be string"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else if (data.price && !(isValidate = await ProductController.validatePrice(data.price))) {
         const message = "price value is not valid, Value should numbers only"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else {
+        data.stock_available = stockAvailable[data.rarity]
+        console.log(data)
         await productModel.create(data, "Product saved successfully")
         apiResponseHandler.send(req, res, "data", data, "Product saved successfully")
       }

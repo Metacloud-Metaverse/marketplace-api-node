@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     type: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: 0
+      defaultValue: 1
     },
     creator_user_id: {
       type: DataTypes.INTEGER,
