@@ -1,7 +1,6 @@
 const dbs = require('../models/index.js')
 const productModel = dbs.Product
 const Sequelize = require('sequelize')
-const { QueryTypes } = require('sequelize')
 const Op = Sequelize.Op
 const apiResponseHandler = require('../helper/ApiResponse.ts')
 
@@ -27,7 +26,7 @@ class ProductController {
       } else if (!data.gender && data.gender != 0) {
         const message = "Gender field required is either empty or null"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if (!data.rarity && data.rarity!= 0) {
+      } else if (!data.rarity && data.rarity != 0) {
         const message = "Rarity field required is either empty or null"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else if (!data.price) {
@@ -68,6 +67,50 @@ class ProductController {
       apiResponseHandler.sendError(req, res, "data", null, message)
     }
   }
+  static async updateProduct(req, res, next) {
+    try {
+      console.log(req.body)
+      console.log(req.params.id)
+      const data = req.body
+      if (data.type && (data.type > 1 || isNaN(data.type))) {
+        const message = "type value is not valid, Value should be either 0 or 1"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (data.gender && (data.gender > 2 || isNaN(data.gender))) {
+        const message = "gender value is not valid, Value should be either 0, 1 or 2"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (data.rarity && (data.rarity > 6 || isNaN(data.rarity))) {
+        const message = "rarity value is not valid, Value should be between 0 and 6"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (data.is_bid && (data.is_bid > 1 || isNaN(data.is_bid))) {
+        const message = "is_bid value is not valid, Value should be either 0 or 1"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (data.is_on_sale && (data.is_on_sale > 1 || isNaN(data.is_on_sale))) {
+        const message = "is_on_sale value is not valid, Value should be either 0 or 1"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (data.is_state_use && (data.is_state_use > 1 || isNaN(data.is_state_use))) {
+        const message = "is_state_use value is not valid, Value should be either 0 or 1"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (data.title && !isNaN(data.title)) {
+        const message = "Title value is not valid, Value should be string"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if (data.price && !(isValidate = await ProductController.validatePrice(data.price))) {
+        const message = "price value is not valid, Value should numbers only"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else {
+        if (data.rarity){
+        data.stock_available = stockAvailable[data.rarity]
+        }
+        console.log(data)
+        data.updated_at = Sequelize.fn('now')
+        await productModel.update(data, { where: { id: req.params.id}})
+        const result = await ProductController.productExist(req.params.id)
+        apiResponseHandler.send(req, res, "data", result, "Product updated successfully")
+      }
+    } catch (error) {
+      const message = "Error updating products, Please try again with correct data"
+      apiResponseHandler.sendError(req, res, "data", null, message)
+    }
+  }
   static async getProductById(req, res, next) {
     try {
       const product_id = req.params.id
@@ -83,7 +126,6 @@ class ProductController {
       const message = "Error fetching product, Please try again with correct data"
       apiResponseHandler.sendError(req, res, "data", null, message)
     }
-
   }
   static async searchProduct(req, res, next) {
     try {
