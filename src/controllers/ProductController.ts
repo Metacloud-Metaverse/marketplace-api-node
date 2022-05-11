@@ -173,6 +173,15 @@ class ProductController {
           return
         }
       }
+      if (data.userId) {
+        if (!isNaN(data.userId)) {
+          whereCondition['creator_user_id'] = data.userId
+        } else {
+          const para = 'userId'
+          ProductController.validateError(req, res, para)
+          return
+        }
+      }
       if (data.rarities) {
         let rarityArray = data.rarities.split(',')
         let a = rarityArray.length
