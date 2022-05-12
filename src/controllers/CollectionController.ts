@@ -12,11 +12,11 @@ class CollectionController {
       if (data.title == null || data.title == "" || !(isNaN(data.title))) {
         const message = "Title is required, must be string, and can not be Empty or Null"
         apiResponseHandler.sendError(req, res, "data", null, message)
-      } else if ((data.status && (isNaN(data.status) || data.status > 1)) || (data.status === null || data.status === "")){ // id status exist it can not be empty, null, string or greater than 1
+      } else if ((data.status && (isNaN(data.status) || data.status > 1)) || (data.status === null || data.status === "")) {
         const message = "Status value is invalid, It can be either 0 or 1"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else {
-        if(!data.status){ data.status = 0 }
+        if (!data.status) { data.status = 0 }
         await collectionModel.create(data, "Collection saved successfully");
         apiResponseHandler.send(req, res, "data", data, "Collection saved successfully")
       }
@@ -34,14 +34,14 @@ class CollectionController {
         const message = "Error updating collections, No collection found with given Id"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else {
-        if (data.titile && (data.title == null || data.title == "")) {
-          const message = "Title can not be Empty or Null"
+        if (data.title === null || data.title === "" || (data.title && !(isNaN(data.title)))) {
+          const message = "Title must be string, and can not be Empty or Null"
           apiResponseHandler.sendError(req, res, "data", null, message)
-        } else if (data.status === null || data.status == ""){
+        } else if (data.status === null || data.status === "" || (data.status && (isNaN(data.status) || data.status > 1))) {
           const message = "Invalid value of status, status can be either 0 or 1"
           apiResponseHandler.sendError(req, res, "data", null, message)
         } else {
-          await collectionModel.update(data, {where: {id: req.params.id}});
+          await collectionModel.update(data, { where: { id: req.params.id } });
           apiResponseHandler.send(req, res, "data", data, "Collection updated successfully")
         }
       }
