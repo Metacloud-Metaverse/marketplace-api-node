@@ -30,6 +30,9 @@ class ProductController {
         } else if (data.category_id && !(await ProductController.categoryExist(data.category_id))) {
           const message = "Error saving products, category does not exist with given category_id"
           apiResponseHandler.sendError(req, res, "data", null, message)
+        } else if (data.parent_product_id && !(await ProductController.productExist(data.parent_product_id))) {
+          const message = "Error saving products, product does not exist with given category_id"
+          apiResponseHandler.sendError(req, res, "data", null, message)
         } else {
           data.stock_available = stockAvailable[data.rarity]
           console.log(data)
@@ -45,22 +48,30 @@ class ProductController {
   static async updateProduct(req, res, next) {
     try {
       const data = req.body
-      if (await ProductController.checkValidation(req, res, data)) {
-        if (data.collection_id && !(await ProductController.collectionExist(data.collection_id))) {
-          const message = "Error saving products, collection does not exist with given collection_id"
-          apiResponseHandler.sendError(req, res, "data", null, message)
-        } else if (data.category_id && !(await ProductController.categoryExist(data.category_id))) {
-          const message = "Error saving products, category does not exist with given category_id"
-          apiResponseHandler.sendError(req, res, "data", null, message)
-        } else {
-          if (data.rarity) {
-            data.stock_available = stockAvailable[data.rarity]
+      const isProductExist = await ProductController.productExist(req.params.id)
+      if (!isProductExist) {
+        const message = "Error updating product, No product found with given Id"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else {
+        if (await ProductController.checkValidation(req, res, data)) {
+          if (data.collection_id && !(await ProductController.collectionExist(data.collection_id))) {
+            const message = "Error saving products, collection does not exist with given collection_id"
+            apiResponseHandler.sendError(req, res, "data", null, message)
+          } else if (data.category_id && !(await ProductController.categoryExist(data.category_id))) {
+            const message = "Error saving products, category does not exist with given category_id"
+            apiResponseHandler.sendError(req, res, "data", null, message)
+          } else if (data.parent_product_id && !(await ProductController.productExist(data.parent_product_id))) {
+            const message = "Error saving products, product does not exist with given category_id"
+            apiResponseHandler.sendError(req, res, "data", null, message)
+          } else {
+            if (data.rarity) {
+              data.stock_available = stockAvailable[data.rarity]
+            }
+            data.updated_at = Sequelize.fn('now')
+            await productModel.update(data, { where: { id: req.params.id } })
+            const result = await ProductController.productExist(req.params.id)
+            apiResponseHandler.send(req, res, "data", result, "Product updated successfully")
           }
-          console.log(data)
-          data.updated_at = Sequelize.fn('now')
-          await productModel.update(data, { where: { id: req.params.id } })
-          const result = await ProductController.productExist(req.params.id)
-          apiResponseHandler.send(req, res, "data", result, "Product updated successfully")
         }
       }
     } catch (error) {
@@ -182,7 +193,6 @@ class ProductController {
     }
   }
   static async productExist(id) {
-    console.log(id)
     return productModel.findOne({ where: { id: id } })
   }
   static async validatePrice(data) {
@@ -202,6 +212,9 @@ class ProductController {
       apiResponseHandler.sendError(req, res, "data", null, message)
     } else if (data.rarity === null || data.rarity === "" || (data.rarity && (data.rarity > 6 || isNaN(data.rarity)))) {
       const message = "rarity value is not valid, Value should be between 0 and 6"
+      apiResponseHandler.sendError(req, res, "data", null, message)
+    } else if (data.parent_product_id === "" || (data.parent_product_id && isNaN(data.parent_product_id))) {
+      const message = "parent_product_id value is not valid, Value should be integer, and not empty null"
       apiResponseHandler.sendError(req, res, "data", null, message)
     } else if (data.collection_id === null || data.collection_id === "" || (data.collection_id && isNaN(data.collection_id))) {
       const message = "collection_id value is not valid, Value should be integer, and not empty null"

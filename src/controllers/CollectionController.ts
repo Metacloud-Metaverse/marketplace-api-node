@@ -41,6 +41,7 @@ class CollectionController {
           const message = "Invalid value of status, status can be either 0 or 1"
           apiResponseHandler.sendError(req, res, "data", null, message)
         } else {
+          data.updated_at = Sequelize.fn('now')
           await collectionModel.update(data, { where: { id: req.params.id } });
           apiResponseHandler.send(req, res, "data", data, "Collection updated successfully")
         }
