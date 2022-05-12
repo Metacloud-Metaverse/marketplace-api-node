@@ -9,11 +9,14 @@ class CollectionController {
     try {
       const data = req.body
       data.creator_user_id = req.user.user_id
-      if(!data.status){ data.status = 0 }
-      if (data.title == null || data.title == "") {
-        const message = "Title can not be Empty or Null"
+      if (data.title == null || data.title == "" || !(isNaN(data.title))) {
+        const message = "Title is required, must be string, and can not be Empty or Null"
+        apiResponseHandler.sendError(req, res, "data", null, message)
+      } else if ((data.status && (isNaN(data.status) || data.status > 1)) || (data.status === null || data.status === "")){ // id status exist it can not be empty, null, string or greater than 1
+        const message = "Status value is invalid, It can be either 0 or 1"
         apiResponseHandler.sendError(req, res, "data", null, message)
       } else {
+        if(!data.status){ data.status = 0 }
         await collectionModel.create(data, "Collection saved successfully");
         apiResponseHandler.send(req, res, "data", data, "Collection saved successfully")
       }
@@ -34,7 +37,7 @@ class CollectionController {
         if (data.titile && (data.title == null || data.title == "")) {
           const message = "Title can not be Empty or Null"
           apiResponseHandler.sendError(req, res, "data", null, message)
-        } else if (data.status && (isNaN(data.status) || data.status>1)){
+        } else if (data.status === null || data.status == ""){
           const message = "Invalid value of status, status can be either 0 or 1"
           apiResponseHandler.sendError(req, res, "data", null, message)
         } else {
