@@ -214,10 +214,10 @@ class ProductController {
       const message = "rarity value is not valid, Value should be between 0 and 6"
       apiResponseHandler.sendError(req, res, "data", null, message)
     } else if (data.parent_product_id === "" || (data.parent_product_id && isNaN(data.parent_product_id))) {
-      const message = "parent_product_id value is not valid, Value should be integer, and not empty null"
+      const message = "parent_product_id value is not valid, Value should be integer, and not empty or null"
       apiResponseHandler.sendError(req, res, "data", null, message)
     } else if (data.collection_id === null || data.collection_id === "" || (data.collection_id && isNaN(data.collection_id))) {
-      const message = "collection_id value is not valid, Value should be integer, and not empty null"
+      const message = "collection_id value is not valid, Value should be integer, and not empty or null"
       apiResponseHandler.sendError(req, res, "data", null, message)
     } else if (data.category_id === null || data.category_id === "" || (data.category_id && isNaN(data.category_id))) {
       const message = "category_id value is not valid, Value should be integer, and not empty null"
